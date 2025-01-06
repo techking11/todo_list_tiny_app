@@ -9,11 +9,11 @@ const queryClient = new QueryClient();
 
 const App: React.FC = () => {
   return (
-    <Provider store={store}>
-      <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <Provider store={store}>
         <TodoApp />
-      </QueryClientProvider>
-    </Provider>
+      </Provider>
+    </QueryClientProvider>
   );
 };
 

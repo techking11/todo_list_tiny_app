@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDispatch, useSelector } from 'react-redux';
 import { addTodo, deleteTodo, fetchTodos, updateTodo } from '../api/api';
-import { Todo } from '../types/types';
+import { Todo, TodoWithoutId } from '../types/types';
 import { setFilter } from '../redux/slice';
 
 function TodoApp() {
@@ -17,17 +17,20 @@ function TodoApp() {
     isError,
   } = useQuery({ queryKey: ['todos'], queryFn: fetchTodos });
 
-  // const addMutation = useMutation(addTodo, {
-  //   onSuccess: () => queryClient.invalidateQueries<any>('todos'),
-  // });
+  const addMutation = useMutation({
+    mutationFn: (todo: TodoWithoutId) => addTodo(todo),
+    onSuccess: () => queryClient.invalidateQueries<any>('todos'),
+  });
 
-  // const updateMutation = useMutation(updateTodo, {
-  //   onSuccess: () => queryClient.invalidateQueries<any>('todos'),
-  // });
+  const updateMutation = useMutation({
+    mutationFn: (todo: Todo) => updateTodo(todo),
+    onSuccess: () => queryClient.invalidateQueries<any>('todos'),
+  });
 
-  // const deleteMutation = useMutation(deleteTodo, {
-  //   onSuccess: () => queryClient.invalidateQueries<any>('todos'),
-  // });
+  const { mutate: deleteMutation } = useMutation({
+    mutationFn: (id: number) => deleteTodo(id),
+    onSuccess: () => queryClient.invalidateQueries<any>('todos'),
+  });
 
   const filteredTodos = todos?.filter((todo: Todo) => {
     if (filter === 'completed') return todo.completed;
@@ -75,18 +78,18 @@ function TodoApp() {
             </span>
             <div>
               <button
-                // onClick={() =>
-                //   updateMutation.mutate({
-                //     id: todo.id,
-                //     completed: !todo.completed,
-                //   })
-                // }
+                onClick={() =>
+                  updateMutation.mutate({
+                    id: todo.id,
+                    completed: !todo.completed,
+                  })
+                }
                 className="mr-2 px-3 py-1 bg-blue-200 rounded"
               >
                 Toggle
               </button>
               <button
-                // onClick={() => deleteMutation.mutate(todo.id)}
+                onClick={() => deleteMutation(todo.id)}
                 className="px-3 py-1 bg-red-200 rounded"
               >
                 Delete
@@ -97,12 +100,12 @@ function TodoApp() {
       </ul>
 
       <button
-        // onClick={() =>
-        //   addMutation.mutate({
-        //     title: `New Todo ${Date.now()}`,
-        //     completed: false,
-        //   })
-        // }
+        onClick={() =>
+          addMutation.mutate({
+            title: `New Todo ${Date.now()}`,
+            completed: false,
+          })
+        }
         className="px-4 py-2 bg-green-500 text-white rounded"
       >
         Add Todo
